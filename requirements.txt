@@ -2,3 +2,5 @@ fastapi
 uvicorn
 tflite-runtime
 numpy
+opencv-python
+imutils
