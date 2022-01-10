@@ -1,16 +1,15 @@
 import cv2 as cv
 import numpy as np
 import imutils
-from urllib.request import urlopen
+import requests
 import os
 from PIL import Image
 from io import BytesIO
 def GnP(url):
     # download the image, convert it to a NumPy array, and then read
     # it into OpenCV format
-    resp = urlopen(url)
-    image = np.asarray(bytearray(resp.read()), dtype="uint8")
-    image = cv.imdecode(image, -1)
+    image = Image.open(BytesIO(requests.get(url).content))
+    image = np.asarray(image)
     #resize the image to with of 500
     image = imutils.resize(image, width=500)
     # return the image
@@ -131,5 +130,7 @@ def effectsdoer(img, name):
     elif name == "watercolor": img = watercolor(img)
     elif name == "pencil": img = pencil(img)
     elif name == "canny": img = canny_img(img)
+    elif name == "pen": img = pen(img)
+    else : img = None
 
     return img
