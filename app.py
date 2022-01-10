@@ -14,22 +14,22 @@ class InputDoc(BaseModel):
 
 
 @app.on_event("startup")
-async def startup():
+def startup():
     logger.info("Starting...")
 
 
 @app.on_event("shutdown")
-async def shutdown():
+def shutdown():
     logger.info("Shutting down...")
 
 
 @app.get("/")
-async def root():
+def root():
     return {"message": "API is running"}
 
 
 @app.post("/classify")
-async def detect(item: InputDoc):
+def detect(item: InputDoc):
     try:
         result = predict(item.text)
         return {"result": result}
