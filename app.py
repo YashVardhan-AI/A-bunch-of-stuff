@@ -3,8 +3,9 @@ from fastapi import FastAPI, Header, HTTPException
 import logging
 from tflitex import predict
 from pydantic import BaseModel
-from cvutils import *
+import cvutils
 from starlette.responses import StreamingResponse
+import cv2
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -47,22 +48,24 @@ def detect(item: InputDoc):
 def effect(input : Item):
     url = input.url
     effect = input.effect
-    img = GnP(url)
-    imgout = effectsdoer(img, effect)
+    img = cvutils.GnP(url)
+    imgout = cvutils.effectsdoer(img, effect)
+    imgout = cv2.cvtColor(imgout, cv2.COLOR_BGR2RGB)
     if imgout is None:
         raise HTTPException(status_code=400, detail="Invalid effect")
-    bytes = to_bytes(imgout)
+    bytes = cvutils.to_bytes(imgout)
     return StreamingResponse(bytes, media_type="image/png")
 
 @app.post("/style")
 def style(input : Item):
     url = input.url
     effect = input.effect
-    img = GnP(url)
-    model = getmodel(effect)
+    img = cvutils.GnP(url)
+    model = cvutils.getmodel(effect)
     if model is None: raise HTTPException(status_code=400, detail="Invalid style")
-    imgout = style_transfer(img, model)
-    bytes = to_bytes(imgout)
+    imgout = cvutils.style_transfer(img, model)
+    imgout = cv2.cvtColor(imgout, cv2.COLOR_BGR2RGB)
+    bytes = cvutils.to_bytes(imgout)
     return StreamingResponse(bytes, media_type="image/png")
 
 if __name__ == "__main__":
