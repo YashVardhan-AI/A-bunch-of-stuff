@@ -1,3 +1,4 @@
+import utils
 import uvicorn
 from fastapi import FastAPI, Header, HTTPException
 import logging
@@ -18,6 +19,11 @@ class InputDoc(BaseModel):
 class Item(BaseModel):
     url  : str
     effect : str
+
+class Item_style(BaseModel):
+    url  : str
+    url2 : str
+    ratio : float
 
 @app.on_event("startup")
 def startup():
@@ -67,6 +73,22 @@ def style(input : Item):
     imgout = cv2.cvtColor(imgout, cv2.COLOR_BGR2RGB)
     bytes = cvutils.to_bytes(imgout)
     return StreamingResponse(bytes, media_type="image/png")
+
+@app.post("/style_predict")
+def style_predict(input : Item_style):
+    url = input.url
+    url2 = input.url2
+    ratio = input.ratio
+    if url is None or url2 is None or ratio is None:
+        raise HTTPException(status_code=400, detail="Incorrect input")
+
+    img = cvutils.GnP(url)
+    style = cvutils.GnP(url2)
+    
+    imgout = utils.blending(img, style,'models/prediction.tflite', 'models/transfer.tflite', ratio)
+    bytes = cvutils.to_bytes(imgout)
+    return StreamingResponse(bytes, media_type="image/png")
+    
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5000)
